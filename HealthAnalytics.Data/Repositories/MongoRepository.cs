@@ -1,6 +1,8 @@
 ﻿using HealthAnalytics.Data.Entities;
 using MongoDB.Driver;
 using System;
+using System.Linq.Expressions;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,40 +10,45 @@ namespace HealthAnalytics.Data.Repositories
 {
     public class MongoRepository<T> : IRepository<T> where T : Entity
     {
-        private IMongoDatabase database;
+        IMongoDatabase database;
+        IMongoCollection<T> entitiesCollection;
         public MongoRepository(IMongoDatabase database)
         {
             this.database = database;
+            string entityName = typeof(T).Name;
+            entitiesCollection = database.GetCollection<T>(entityName);
         }
 
         public void Create(T entity)
         {
-            throw new NotImplementedException();
+            entitiesCollection.InsertOne(entity);
         }
 
         public T Get(Guid guid)
         {
-            throw new NotImplementedException();
+            return entitiesCollection.Find(element => element.Guid == guid)
+                                     .FirstOrDefault();
         }
 
         public IEnumerable<T> GetAll()
         {
-            throw new NotImplementedException();
+            return entitiesCollection.AsQueryable();
         }
 
-        public IEnumerable<T> GetAll(Func<T, bool> predicate)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return entitiesCollection.AsQueryable()
+                .Where(predicate);
         }
 
-        public void Remove(T entity)
+        public void Remove(Expression<Func<T, bool>> predicate)
         {
-            throw new NotImplementedException();
+            entitiesCollection.DeleteOne(predicate);
         }
 
         public void Update(T entity)
         {
-            throw new NotImplementedException();
+            entitiesCollection.ReplaceOne(element => element.Guid == entity.Guid, entity);
         }
     }
 }

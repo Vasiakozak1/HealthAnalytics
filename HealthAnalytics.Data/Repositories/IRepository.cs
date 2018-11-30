@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using HealthAnalytics.Data.Entities;
 
 namespace HealthAnalytics.Data.Repositories
@@ -10,12 +11,12 @@ namespace HealthAnalytics.Data.Repositories
 
         IEnumerable<T> GetAll();
 
-        IEnumerable<T> GetAll(Func<T, bool> predicate);
+        IEnumerable<T> GetAll(Expression<Func<T, bool>> predicate);
 
         void Create(T entity);
 
         void Update(T entity);
 
-        void Remove(T entity);
+        void Remove(Expression<Func<T, bool>> predicate);
     }
 }

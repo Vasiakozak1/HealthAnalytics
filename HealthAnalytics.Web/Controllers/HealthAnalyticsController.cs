@@ -1,5 +1,7 @@
-﻿using HealthAnalytics.Data.UnitOfWork;
+﻿using HealthAnalytics.Data.Entities;
+using HealthAnalytics.Data.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace HealthAnalytics.Web.Controllers
 {
@@ -11,6 +13,6 @@ namespace HealthAnalytics.Web.Controllers
         public HealthAnalyticsController(IUnitOfWork unitOfWork)
         {
             this.unitOfWork = unitOfWork;
-        }
+        }        
     }
 }

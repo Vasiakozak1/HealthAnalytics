@@ -45,7 +45,6 @@ namespace HealthAnalytics.Web
                         ValidateIssuerSigningKey = true
                     };
                 });
-
             services.AddTransient<IUnitOfWork, MongoUnitOfWork>();
             services.AddMvc();
         }

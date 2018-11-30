@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+
 namespace HealthAnalytics.Web.Controllers
 {
     [Route("api/[controller]")]
@@ -16,11 +18,16 @@ namespace HealthAnalytics.Web.Controllers
     {
         public AccountController(IUnitOfWork unitOfWork): base(unitOfWork)
         {
+        }
 
+        public IActionResult Login(string email, string password)
+        {
+
+            return Ok(CreateJWTToken(null));
         }
 
 
-        string CreateJWTToken(IEnumerable<Claim> claims)
+        private string CreateJWTToken(IEnumerable<Claim> claims)
         {
             var currentDate = DateTime.Now;
             var jwt = new JwtSecurityToken(
