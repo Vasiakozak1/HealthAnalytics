@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
+using HealthAnalytics.BusinessLogic.Models;
 
 namespace HealthAnalytics.Web.Controllers
 {
@@ -26,6 +27,15 @@ namespace HealthAnalytics.Web.Controllers
             return Ok(CreateJWTToken(null));
         }
 
+        public IActionResult Register(RegisterModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+
+        }
 
         private string CreateJWTToken(IEnumerable<Claim> claims)
         {

@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver.Core;
 using HealthAnalytics.Data.UnitOfWork;
+using HealthAnalytics.BusinessLogic.Services.Abstract;
+using HealthAnalytics.BusinessLogic.Services.Implementation;
+using MongoDB.Bson;
 
 namespace HealthAnalytics.Web
 {
@@ -45,7 +48,8 @@ namespace HealthAnalytics.Web
                         ValidateIssuerSigningKey = true
                     };
                 });
-            services.AddTransient<IUnitOfWork, MongoUnitOfWork>();
+            services.AddTransient<IUnitOfWork<ObjectId>, MongoUnitOfWork>();
+            services.AddTransient<IHashingService, Md5HashingService>();
             services.AddMvc();
         }
 

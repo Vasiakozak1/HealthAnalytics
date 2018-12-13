@@ -1,15 +1,16 @@
 ﻿using HealthAnalytics.Data.Entities;
 using HealthAnalytics.Data.Repositories;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace HealthAnalytics.Data.UnitOfWork
 {
-    public class MongoUnitOfWork: IUnitOfWork
+    public class MongoUnitOfWork: IUnitOfWork<ObjectId>
     {
         IMongoDatabase database;
 
-        IRepository<User> userRepository;
+        IRepository<User<ObjectId>, ObjectId> userRepository;
 
         public MongoUnitOfWork(IConfiguration configuration)
         {
@@ -19,17 +20,17 @@ namespace HealthAnalytics.Data.UnitOfWork
             database = client.GetDatabase(connection.DatabaseName);
         }
 
-        public IRepository<User> UserRepository
+        public IRepository<User<ObjectId>, ObjectId> UserRepository
         {
             get
             {
-                return userRepository != null ? userRepository : getRepository<User>();
+                return userRepository != null ? userRepository : getRepository<User<ObjectId>>();
             }
         }
 
-        IRepository<T> getRepository<T>() where T: Entity
+        IRepository<T, ObjectId> getRepository<T>() where T: Entity<ObjectId>
         {
-            return new MongoRepository<T>(database);
+            return new MongoRepository<T, ObjectId>(database);
         }
     }
 }

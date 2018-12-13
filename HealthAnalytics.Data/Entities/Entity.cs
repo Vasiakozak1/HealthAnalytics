@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace HealthAnalytics.Data.Entities
 {
-    public class Entity
+    public class Entity<TKey> where TKey: struct, IComparable<TKey>
     {
-        public Guid Guid { get; set; }
+        [BsonId]
+        public TKey Guid { get; set; }
     }
 }

@@ -5,18 +5,20 @@ using HealthAnalytics.Data.Entities;
 
 namespace HealthAnalytics.Data.Repositories
 {
-    public interface IRepository<T> where T: Entity
+    public interface IRepository<TEntity, TKey> where TEntity: Entity<TKey> where TKey: struct, IComparable<TKey>
     {
-        T Get(Guid guid);
+        TEntity Get(TKey guid);
 
-        IEnumerable<T> GetAll();
+        TEntity Get(Expression<Func<TEntity, bool>> predicate);
 
-        IEnumerable<T> GetAll(Expression<Func<T, bool>> predicate);
+        IEnumerable<TEntity> GetAll();
 
-        void Create(T entity);
+        IEnumerable<TEntity> GetAll(Expression<Func<TEntity, bool>> predicate);
 
-        void Update(T entity);
+        void Create(TEntity entity);
 
-        void Remove(Expression<Func<T, bool>> predicate);
+        void Update(TEntity entity);
+
+        void Remove(Expression<Func<TEntity, bool>> predicate);
     }
 }

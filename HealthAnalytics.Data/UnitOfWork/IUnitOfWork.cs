@@ -1,10 +1,11 @@
-﻿using HealthAnalytics.Data.Entities;
+﻿using System;
+using HealthAnalytics.Data.Entities;
 using HealthAnalytics.Data.Repositories;
 
 namespace HealthAnalytics.Data.UnitOfWork
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork<TEntitiesKey> where TEntitiesKey: struct, IComparable<TEntitiesKey>
     {
-        IRepository<User> UserRepository { get; }
+        IRepository<User<TEntitiesKey>, TEntitiesKey> UserRepository { get; }
     }
 }

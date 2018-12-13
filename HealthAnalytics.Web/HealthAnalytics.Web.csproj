@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HealthAnalytics.BusinessLogic\HealthAnalytics.BusinessLogic.csproj" />
     <ProjectReference Include="..\HealthAnalytics.Data\HealthAnalytics.Data.csproj" />
   </ItemGroup>
 

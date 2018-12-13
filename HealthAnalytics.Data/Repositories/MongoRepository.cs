@@ -5,50 +5,57 @@ using System.Linq.Expressions;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using MongoDB.Bson;
 
 namespace HealthAnalytics.Data.Repositories
 {
-    public class MongoRepository<T> : IRepository<T> where T : Entity
+    public class MongoRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : Entity<TKey> where TKey : struct, IComparable<TKey>
     {
         IMongoDatabase database;
-        IMongoCollection<T> entitiesCollection;
+        IMongoCollection<TEntity> entitiesCollection;
         public MongoRepository(IMongoDatabase database)
         {
             this.database = database;
-            string entityName = typeof(T).Name;
-            entitiesCollection = database.GetCollection<T>(entityName);
+            string entityName = typeof(TEntity).Name;
+            entitiesCollection = database.GetCollection<TEntity>(entityName);
         }
 
-        public void Create(T entity)
+        public void Create(TEntity entity)
         {
             entitiesCollection.InsertOne(entity);
         }
 
-        public T Get(Guid guid)
-        {
-            return entitiesCollection.Find(element => element.Guid == guid)
+        public TEntity Get(TKey guid)
+        {            
+            return entitiesCollection.Find(element => element.Guid.CompareTo(guid) == 0)
                                      .FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll()
+        public TEntity Get(Expression<Func<TEntity, bool>> predicate)
+        {
+            return entitiesCollection.Find(predicate)
+                                     .FirstOrDefault();
+        }
+
+        public IEnumerable<TEntity> GetAll()
         {
             return entitiesCollection.AsQueryable();
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> predicate)
+        public IEnumerable<TEntity> GetAll(Expression<Func<TEntity, bool>> predicate)
         {
             return entitiesCollection.AsQueryable()
                 .Where(predicate);
         }
 
-        public void Remove(Expression<Func<T, bool>> predicate)
+        public void Remove(Expression<Func<TEntity, bool>> predicate)
         {
             entitiesCollection.DeleteOne(predicate);
         }
 
-        public void Update(T entity)
+        public void Update(TEntity entity)
         {
-            entitiesCollection.ReplaceOne(element => element.Guid == entity.Guid, entity);
+            entitiesCollection.ReplaceOne(element => element.Guid.CompareTo(entity.Guid) == 0, entity);
         }
     }
 }
