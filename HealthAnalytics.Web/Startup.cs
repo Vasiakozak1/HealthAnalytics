@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver.Core;
 using HealthAnalytics.Data.UnitOfWork;
 using HealthAnalytics.BusinessLogic.Services.Abstract;
 using HealthAnalytics.BusinessLogic.Services.Implementation;
 using MongoDB.Bson;
+using HealthAnalytics.Web.Middlewares;
+using HealthAnalytics.BusinessLogic;
 
 namespace HealthAnalytics.Web
 {
@@ -64,6 +59,7 @@ namespace HealthAnalytics.Web
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseAuthentication();
+            app.UseMiddleware(typeof(ExceptionHandler));
             app.UseMvcWithDefaultRoute();
         }
     }

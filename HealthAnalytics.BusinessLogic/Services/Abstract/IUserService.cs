@@ -1,10 +1,11 @@
-﻿using HealthAnalytics.BusinessLogic.Models;
+﻿using HealthAnalytics.BusinessLogic.Data.ViewModels;
+using HealthAnalytics.BusinessLogic.Models;
 
 namespace HealthAnalytics.BusinessLogic.Services.Abstract
 {
     public interface IUserService
     {
-        ServiceResult<string> Register(RegisterModel model);
-        ServiceResult<string> Login(LoginModel model);
+        void Register(RegisterModel model);
+        LoginViewModel LogIn(string email, string password);
     }
 }

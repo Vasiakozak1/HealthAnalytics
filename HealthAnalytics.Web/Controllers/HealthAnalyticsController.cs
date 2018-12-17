@@ -1,6 +1,7 @@
 ﻿using HealthAnalytics.Data.Entities;
 using HealthAnalytics.Data.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using System;
 
 namespace HealthAnalytics.Web.Controllers
@@ -9,8 +10,8 @@ namespace HealthAnalytics.Web.Controllers
     [ApiController]
     public class HealthAnalyticsController : ControllerBase
     {
-        protected IUnitOfWork unitOfWork;
-        public HealthAnalyticsController(IUnitOfWork unitOfWork)
+        protected IUnitOfWork<ObjectId> unitOfWork;
+        public HealthAnalyticsController(IUnitOfWork<ObjectId> unitOfWork)
         {
             this.unitOfWork = unitOfWork;
         }        

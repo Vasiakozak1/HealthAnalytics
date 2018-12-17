@@ -1,9 +1,15 @@
-﻿using HealthAnalytics.BusinessLogic.Models;
+﻿using HealthAnalytics.BusinessLogic.Data.ViewModels;
+using HealthAnalytics.BusinessLogic.Exceptions;
+using HealthAnalytics.BusinessLogic.Models;
 using HealthAnalytics.BusinessLogic.Services.Abstract;
 using HealthAnalytics.Data.Entities;
 using HealthAnalytics.Data.UnitOfWork;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace HealthAnalytics.BusinessLogic.Services.Implementation
 {
@@ -16,12 +22,55 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             this.hashingService = hashingService;
         }
 
-        public ServiceResult<string> Register(RegisterModel model)
+        public LoginViewModel LogIn(string email, string password)
         {
-            var birthDate = DateTime.Parse(model.BirthDate);
-            var userExists = unitOfWork.UserRepository.Get(u => u.Email.Equals(model.Email)) != null;
-            if (userExists)
+            User<ObjectId> user = unitOfWork.UserRepository.Get(u => u.Email == email);
+            if (user != null)
             {
+                bool rightPassword = hashingService.VerifyHash(password, user.PasswordHash);
+                if (rightPassword)
+                {
+                    var claims = new List<Claim>()
+                    {
+                        new Claim("First name", user.FirstName),
+                        new Claim("Last name", user.LastName),
+                        new Claim("Email", user.Email)
+                    };
+                    string token = CreateJWTToken(claims);
+
+                    return new LoginViewModel
+                    {
+                        Email = email,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Token = token
+                    };
+                }
+            }
+            throw new WrongCredentialsException();
+        }
+
+        private string CreateJWTToken(IEnumerable<Claim> claims)
+        {
+            var currentDate = DateTime.Now;
+            var jwt = new JwtSecurityToken(
+                issuer: AuthOptions.ISSUER,
+                audience: AuthOptions.AUDIENCE,
+                notBefore: currentDate,
+                claims: claims,
+                expires: currentDate.Add(TimeSpan.FromHours(AuthOptions.LIFETIME)),
+                signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
+                );
+
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
+        }
+
+        public void Register(RegisterModel model)
+        {
+            var userExists = unitOfWork.UserRepository.Get(u => u.Email.Equals(model.Email)) != null;
+            if (!userExists)
+            {
+                var birthDate = DateTime.Parse(model.BirthDate);
                 var user = new User<ObjectId>
                 {
                     FirstName = model.FirstName,
@@ -33,17 +82,11 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
                     PasswordHash = hashingService.GetHash(model.Password)
                 };
                 unitOfWork.UserRepository.Create(user);
-                return new ServiceResult<string>(IsSuccess: true, Data: "");
             }
             else
             {
-
+                throw new ElementAlreadyExistsException(string.Format("User with email: {0}", model.Email));
             }
-        }
-
-        public ServiceResult<string> Login(LoginModel model)
-        {
-            throw new NotImplementedException();
         }
     }
 }
