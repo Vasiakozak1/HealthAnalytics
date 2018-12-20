@@ -45,6 +45,9 @@ namespace HealthAnalytics.Web
                 });
             services.AddTransient<IUnitOfWork<ObjectId>, MongoUnitOfWork>();
             services.AddTransient<IHashingService, Md5HashingService>();
+            services.AddTransient<ISMSService, SMSService>();
+            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IUserService, UserService>();
             services.AddMvc();
         }
 
@@ -56,6 +59,13 @@ namespace HealthAnalytics.Web
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(builder => 
+            {
+                builder.AllowAnyHeader();
+                builder.AllowAnyOrigin();
+                builder.AllowCredentials();
+                builder.AllowAnyMethod();
+            });
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseAuthentication();

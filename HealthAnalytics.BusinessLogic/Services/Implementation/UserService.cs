@@ -88,5 +88,16 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
                 throw new ElementAlreadyExistsException(string.Format("User with email: {0}", model.Email));
             }
         }
+
+        private UserToken<ObjectId> GenerateUserToken(User<ObjectId> user)
+        {
+            string token = hashingService.GetHash(user.PasswordHash + DateTime.Now.ToLongDateString());
+            return new UserToken<ObjectId>
+            {
+                DateExpired = DateTime.Now.AddHours(Constants.USER_REGISTER_TOKEN_EXPIRE_HOURS),
+                Token = token,
+                UserId = user.Guid
+            };
+        }
     }
 }

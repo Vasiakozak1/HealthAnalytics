@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using HealthAnalytics.BusinessLogic.Services.Abstract;
 using HealthAnalytics.BusinessLogic;
 using HealthAnalytics.BusinessLogic.Data.ViewModels;
+using System.Collections.Generic;
 
 namespace HealthAnalytics.Web.Controllers
 {
@@ -18,6 +19,8 @@ namespace HealthAnalytics.Web.Controllers
             this.userService = userService;
         }
 
+        [HttpPost]
+        [Route("[action]")]
         public IActionResult Login(LoginModel model)
         {
             if (!ModelState.IsValid)
@@ -29,6 +32,8 @@ namespace HealthAnalytics.Web.Controllers
             return Ok(loginResult);
         }
 
+        [HttpPost]
+        [Route("[action]")]
         public IActionResult Register(RegisterModel model)
         {
             if (!ModelState.IsValid)
@@ -37,7 +42,13 @@ namespace HealthAnalytics.Web.Controllers
             }
             userService.Register(model);
 
-            return Ok(Constants.USER_REGISTRATED_MESSAGE);
-        }        
+            return Ok(Constants.GetSuccessfullRegistrationMessage());
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<string>> Get()
+        {
+            return new string[] { "value1", "value2" };
+        }
     }
 }
