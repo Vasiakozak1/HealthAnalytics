@@ -25,7 +25,7 @@ namespace HealthAnalytics.Data.Repositories
 
         public TEntity Get(TKey guid)
         {            
-            return entitiesCollection.Find(element => element.Guid.CompareTo(guid) == 0)
+            return entitiesCollection.Find(element => element.Id.CompareTo(guid) == 0)
                                      .FirstOrDefault();
         }
 
@@ -53,7 +53,7 @@ namespace HealthAnalytics.Data.Repositories
 
         public void Update(TEntity entity)
         {
-            entitiesCollection.ReplaceOne(element => element.Guid.CompareTo(entity.Guid) == 0, entity);
+            entitiesCollection.ReplaceOne(element => element.Id.CompareTo(entity.Id) == 0, entity);
         }
     }
 }

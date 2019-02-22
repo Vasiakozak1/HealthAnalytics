@@ -1,11 +1,11 @@
 ﻿using HealthAnalytics.Data.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
-using HealthAnalytics.BusinessLogic.Models;
 using MongoDB.Bson;
 using HealthAnalytics.BusinessLogic.Services.Abstract;
 using HealthAnalytics.BusinessLogic;
 using HealthAnalytics.BusinessLogic.Data.ViewModels;
 using System.Collections.Generic;
+using HealthAnalytics.BusinessLogic.Data.Models;
 
 namespace HealthAnalytics.Web.Controllers
 {
@@ -43,6 +43,17 @@ namespace HealthAnalytics.Web.Controllers
             userService.Register(model);
 
             return Ok(Constants.GetSuccessfullRegistrationMessage());
+        }
+
+        public IActionResult VerifyEmail(VerifyEmailModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            userService.VerifyToken(model.Token, model.Email);
+            return Ok();
         }
 
         [HttpGet]

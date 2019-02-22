@@ -1,23 +1,30 @@
-﻿using HealthAnalytics.BusinessLogic.Data.ViewModels;
+﻿using HealthAnalytics.BusinessLogic.Data.Models;
+using HealthAnalytics.BusinessLogic.Data.ViewModels;
 using HealthAnalytics.BusinessLogic.Exceptions;
-using HealthAnalytics.BusinessLogic.Models;
 using HealthAnalytics.BusinessLogic.Services.Abstract;
 using HealthAnalytics.Data.Entities;
 using HealthAnalytics.Data.UnitOfWork;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace HealthAnalytics.BusinessLogic.Services.Implementation
 {
     public class UserService : BaseService, IUserService
     {
         private IHashingService hashingService;
-        public UserService(ISMSService smsService, IEmailService emailService, IUnitOfWork<ObjectId> unitOfWork, IHashingService hashingService) 
-            : base(smsService, emailService, unitOfWork)
+        public UserService(ISMSService smsService, 
+            IEmailService emailService, 
+            IUnitOfWork<ObjectId> unitOfWork, 
+            IHashingService hashingService,
+            IConfiguration configuration) 
+            : base(smsService, emailService, unitOfWork, configuration)
         {
             this.hashingService = hashingService;
         }
@@ -25,7 +32,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
         public LoginViewModel LogIn(string email, string password)
         {
             User<ObjectId> user = unitOfWork.UserRepository.Get(u => u.Email == email);
-            if (user != null)
+            if (user != null && user.IsActivated)
             {
                 bool rightPassword = hashingService.VerifyHash(password, user.PasswordHash);
                 if (rightPassword)
@@ -49,6 +56,51 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             }
             throw new WrongCredentialsException();
         }
+        
+        public void VerifyToken(string token, string email)
+        {
+            var userToActivate = unitOfWork.UserRepository.Get(u => u.Email == email);
+            if(userToActivate != null)
+            {
+                var userToken = unitOfWork.TokenRepository.Get(t => t.UserId == userToActivate.Id);
+                if (token.Equals(userToken.Token))
+                {
+                    userToActivate.IsActivated = true;
+                    unitOfWork.TokenRepository.Remove(t => t.UserId == userToActivate.Id);
+                    return;
+                }
+            }
+            throw new WrongTokenException();
+        }
+
+        public async Task Register(RegisterModel model)
+        {
+            var userExists = unitOfWork.UserRepository.Get(u => u.Email.Equals(model.Email)) != null;
+            if (!userExists)
+            {
+                var birthDate = DateTime.Parse(model.BirthDate);
+                var user = new User<ObjectId>
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    Gender = model.Gender,
+                    BirthDate = birthDate,
+                    IsActivated = false,
+                    PasswordHash = hashingService.GetHash(model.Password)
+                };
+
+                var userToken = generateUserToken(user);
+                var confirmationUrl = generateEmailConfirmationUrl(userToken.Token, user.Email);
+                await emailService.SendEmailConfirmationMessage(user, confirmationUrl);
+                unitOfWork.UserRepository.Create(user);
+                unitOfWork.TokenRepository.Create(userToken);
+            }
+            else
+            {
+                throw new ElementAlreadyExistsException(string.Format("User with email: {0}", model.Email));
+            }
+        }
 
         private string CreateJWTToken(IEnumerable<Claim> claims)
         {
@@ -65,38 +117,22 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
-        public void Register(RegisterModel model)
+        private string generateEmailConfirmationUrl(string token, string email)
         {
-            var userExists = unitOfWork.UserRepository.Get(u => u.Email.Equals(model.Email)) != null;
-            if (!userExists)
-            {
-                var birthDate = DateTime.Parse(model.BirthDate);
-                var user = new User<ObjectId>
-                {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    Gender = model.Gender,
-                    BirthDate = birthDate,
-                    IsActivated = false,
-                    PasswordHash = hashingService.GetHash(model.Password)
-                };
-                unitOfWork.UserRepository.Create(user);
-            }
-            else
-            {
-                throw new ElementAlreadyExistsException(string.Format("User with email: {0}", model.Email));
-            }
+            IConfigurationSection clientSection = configuration.GetSection(Constants.CLIENT_SECTION);
+            string clientBaseUrl = clientSection[Constants.CLIENT_URL];
+            string confirmEmailUrl = clientSection[Constants.CONFIRM_EMAIL_URL];
+            return string.Format("{0}?{1}&{2}", Path.Combine(clientBaseUrl, confirmEmailUrl), email, token);
         }
 
-        private UserToken<ObjectId> GenerateUserToken(User<ObjectId> user)
+        private UserToken<ObjectId> generateUserToken(User<ObjectId> user)
         {
             string token = hashingService.GetHash(user.PasswordHash + DateTime.Now.ToLongDateString());
             return new UserToken<ObjectId>
             {
                 DateExpired = DateTime.Now.AddHours(Constants.USER_REGISTER_TOKEN_EXPIRE_HOURS),
                 Token = token,
-                UserId = user.Guid
+                UserId = user.Id
             };
         }
     }

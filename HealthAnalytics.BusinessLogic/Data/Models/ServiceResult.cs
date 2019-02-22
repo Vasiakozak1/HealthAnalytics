@@ -1,4 +1,4 @@
-﻿namespace HealthAnalytics.BusinessLogic.Models
+﻿namespace HealthAnalytics.BusinessLogic.Data.Models
 {
     public class ServiceResult<T>
     {

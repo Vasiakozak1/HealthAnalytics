@@ -6,6 +6,6 @@ namespace HealthAnalytics.Data.Entities
     public class Entity<TKey> where TKey: struct, IComparable<TKey>
     {
         [BsonId]
-        public TKey Guid { get; set; }
+        public TKey Id { get; set; }
     }
 }

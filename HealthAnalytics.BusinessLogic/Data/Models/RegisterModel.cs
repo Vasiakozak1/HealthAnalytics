@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HealthAnalytics.BusinessLogic.Models
+namespace HealthAnalytics.BusinessLogic.Data.Models
 {
     public class RegisterModel
     {

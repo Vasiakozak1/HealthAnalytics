@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthAnalytics.Data", "Hea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthAnalytics.Tests", "HealthAnalytics.Tests\HealthAnalytics.Tests.csproj", "{B6146819-8B57-4464-BB4D-F7C09FD1C43C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthAnalytics.BusinessLogic", "HealthAnalytics.BusinessLogic\HealthAnalytics.BusinessLogic.csproj", "{DA7EB85D-C5E5-4EFB-B693-97C3DE1683C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthAnalytics.BusinessLogic", "HealthAnalytics.BusinessLogic\HealthAnalytics.BusinessLogic.csproj", "{DA7EB85D-C5E5-4EFB-B693-97C3DE1683C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

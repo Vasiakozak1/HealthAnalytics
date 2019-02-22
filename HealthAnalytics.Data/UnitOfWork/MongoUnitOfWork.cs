@@ -11,6 +11,7 @@ namespace HealthAnalytics.Data.UnitOfWork
         IMongoDatabase database;
 
         IRepository<User<ObjectId>, ObjectId> userRepository;
+        IRepository<UserToken<ObjectId>, ObjectId> tokenRepository;
 
         public MongoUnitOfWork(IConfiguration configuration)
         {
@@ -25,6 +26,14 @@ namespace HealthAnalytics.Data.UnitOfWork
             get
             {
                 return userRepository != null ? userRepository : getRepository<User<ObjectId>>();
+            }
+        }
+
+        public IRepository<UserToken<ObjectId>, ObjectId> TokenRepository
+        {
+            get
+            {
+                return tokenRepository != null ? tokenRepository : getRepository<UserToken<ObjectId>>();
             }
         }
 
