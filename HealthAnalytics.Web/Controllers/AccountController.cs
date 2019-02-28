@@ -23,11 +23,6 @@ namespace HealthAnalytics.Web.Controllers
         [Route("[action]")]
         public IActionResult Login(LoginModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             LoginViewModel loginResult = userService.LogIn(model.Email, model.Password);
             return Ok(loginResult);
         }
@@ -36,24 +31,17 @@ namespace HealthAnalytics.Web.Controllers
         [Route("[action]")]
         public IActionResult Register(RegisterModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             userService.Register(model);
 
             return Ok(Constants.GetSuccessfullRegistrationMessage());
         }
 
+        [HttpPost]
+        [Route("[action]")]
         public IActionResult VerifyEmail(VerifyEmailModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             userService.VerifyToken(model.Token, model.Email);
-            return Ok();
+            return Ok(Constants.GetSuccessfullEmailConfirmationMessage());
         }
 
         [HttpGet]

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using HealthAnalytics.BusinessLogic.Data.Models;
 using HealthAnalytics.Data.Entities;
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Hosting;
 
 namespace HealthAnalytics.BusinessLogic.Services.Implementation
 {
@@ -20,7 +21,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
         private readonly int smtpPort;
         private readonly IRazorLightEngine razorEngine;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
         {
             IConfigurationSection emailSection = configuration.GetSection("Email");
             fromEmailAddress = emailSection[nameof(fromEmailAddress)];
@@ -28,8 +29,11 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             fromEmailName = emailSection[nameof(fromEmailName)];
             smtpAddress = emailSection[nameof(smtpAddress)];
             smtpPort = int.Parse(emailSection[nameof(smtpPort)]);
-            string pathToTemplates = Path.Combine(Directory.GetCurrentDirectory(), Constants.TEMPLATES_FOLDER_NAME);
-            razorEngine = EngineFactory.CreatePhysical(pathToTemplates);
+            string pathToTemplates = Path.Combine(hostingEnvironment.ContentRootPath, Constants.TEMPLATES_FOLDER_NAME);
+            razorEngine = new RazorLightEngineBuilder()
+                .UseFilesystemProject(pathToTemplates)
+                .UseMemoryCachingProvider()
+                .Build();
         }
 
         public async Task SendEmailConfirmationMessage<TKey>(User<TKey> user, string confirmationUrl) where TKey: struct, IComparable<TKey>
@@ -43,7 +47,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
                 ReceiverLastName = user.LastName
             };
 
-            string messageText = getConfirmEmailMessage(confirmEmailModel);
+            string messageText = await GetConfirmEmailMessage(confirmEmailModel);
             await sendEmailAsync(messageText, Constants.CONFIRM_EMAIL_MESSAGE_SUBJECT, user.Email);
         }
 
@@ -69,14 +73,14 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             }
         }
 
-        private string getConfirmEmailMessage(ConfirmEmailModel model)
+        private Task<string> GetConfirmEmailMessage(ConfirmEmailModel model)
         {
-            return createMessageBody(Constants.CONFIRM_EMAIL_TEMPLATE_NAME, model);
+            return CreateMessageBody(Constants.CONFIRM_EMAIL_TEMPLATE_NAME, model);
         }
 
-        private string createMessageBody<TModel>(string templateName, TModel model) where TModel : class
+        private async Task<string> CreateMessageBody<TModel>(string templateName, TModel model) where TModel : class
         {
-            return razorEngine.Parse(templateName, model);
+            return await razorEngine.CompileRenderAsync(templateName, model);
         }
     }
 }

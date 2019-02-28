@@ -67,6 +67,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
                 {
                     userToActivate.IsActivated = true;
                     unitOfWork.TokenRepository.Remove(t => t.UserId == userToActivate.Id);
+                    unitOfWork.UserRepository.Update(userToActivate);
                     return;
                 }
             }
@@ -81,6 +82,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
                 var birthDate = DateTime.Parse(model.BirthDate);
                 var user = new User<ObjectId>
                 {
+                    Id = ObjectId.GenerateNewId(),
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     Email = model.Email,
@@ -91,7 +93,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
                 };
 
                 var userToken = generateUserToken(user);
-                var confirmationUrl = generateEmailConfirmationUrl(userToken.Token, user.Email);
+                var confirmationUrl = GenerateEmailConfirmationUrl(userToken.Token, user.Email);
                 await emailService.SendEmailConfirmationMessage(user, confirmationUrl);
                 unitOfWork.UserRepository.Create(user);
                 unitOfWork.TokenRepository.Create(userToken);
@@ -117,12 +119,12 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
-        private string generateEmailConfirmationUrl(string token, string email)
+        private string GenerateEmailConfirmationUrl(string token, string email)
         {
             IConfigurationSection clientSection = configuration.GetSection(Constants.CLIENT_SECTION);
             string clientBaseUrl = clientSection[Constants.CLIENT_URL];
             string confirmEmailUrl = clientSection[Constants.CONFIRM_EMAIL_URL];
-            return string.Format("{0}?{1}&{2}", Path.Combine(clientBaseUrl, confirmEmailUrl), email, token);
+            return string.Format("{0}/{1}?email={2}&token={3}", clientBaseUrl, confirmEmailUrl, email, token);
         }
 
         private UserToken<ObjectId> generateUserToken(User<ObjectId> user)

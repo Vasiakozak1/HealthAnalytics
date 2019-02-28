@@ -18,5 +18,9 @@ namespace HealthAnalytics.BusinessLogic
         {
             return new MessageViewModel("The user has been registrated, please, check your email to continue", "Success");
         }
+        public static MessageViewModel GetSuccessfullEmailConfirmationMessage()
+        {
+            return new MessageViewModel("Your email has been confirmed succesfully", "Success");
+        }
     }
 }

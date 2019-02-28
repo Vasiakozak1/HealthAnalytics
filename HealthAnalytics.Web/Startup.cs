@@ -11,6 +11,7 @@ using HealthAnalytics.BusinessLogic.Services.Implementation;
 using MongoDB.Bson;
 using HealthAnalytics.Web.Middlewares;
 using HealthAnalytics.BusinessLogic;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace HealthAnalytics.Web
 {
@@ -27,6 +28,11 @@ namespace HealthAnalytics.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddSwaggerGen(setup =>
+            {
+                setup.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info() { Title = "Test api", Version = "0.00001" });
+            });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -70,6 +76,16 @@ namespace HealthAnalytics.Web
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseMiddleware(typeof(ExceptionHandler));
+
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
+
             app.UseMvcWithDefaultRoute();
         }
     }
