@@ -16,11 +16,11 @@ namespace HealthAnalytics.BusinessLogic
 
         public static MessageViewModel GetSuccessfullRegistrationMessage()
         {
-            return new MessageViewModel("The user has been registrated, please, check your email to continue", "Success");
+            return new MessageViewModel("The user has been registrated, please, check your email to continue", "Success", MessageType.Dialog);
         }
         public static MessageViewModel GetSuccessfullEmailConfirmationMessage()
         {
-            return new MessageViewModel("Your email has been confirmed succesfully", "Success");
+            return new MessageViewModel("Your email has been confirmed succesfully", "Success", MessageType.Dialog);
         }
     }
 }
