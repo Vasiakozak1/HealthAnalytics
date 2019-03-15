@@ -74,7 +74,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             throw new WrongTokenException();
         }
 
-        public async Task Register(RegisterModel model)
+        public Task Register(RegisterModel model)
         {
             var userExists = unitOfWork.UserRepository.Get(u => u.Email.Equals(model.Email)) != null;
             if (!userExists)
@@ -94,7 +94,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
 
                 var userToken = generateUserToken(user);
                 var confirmationUrl = GenerateEmailConfirmationUrl(userToken.Token, user.Email);
-                await emailService.SendEmailConfirmationMessage(user, confirmationUrl);
+                emailService.SendEmailConfirmationMessage(user, confirmationUrl).Wait();
                 unitOfWork.UserRepository.Create(user);
                 unitOfWork.TokenRepository.Create(userToken);
             }
@@ -102,6 +102,7 @@ namespace HealthAnalytics.BusinessLogic.Services.Implementation
             {
                 throw new ElementAlreadyExistsException(string.Format("User with email: {0}", model.Email));
             }
+            return Task.CompletedTask;
         }
 
         private string CreateJWTToken(IEnumerable<Claim> claims)

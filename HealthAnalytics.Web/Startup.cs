@@ -75,7 +75,7 @@ namespace HealthAnalytics.Web
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseAuthentication();
-            app.UseMiddleware(typeof(ExceptionHandler));
+            
 
             app.UseSwagger();
 
@@ -85,8 +85,8 @@ namespace HealthAnalytics.Web
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
-
-            app.UseMvcWithDefaultRoute();
+            app.UseMiddleware<ExceptionHandler>();
+            app.UseMvc();
         }
     }
 }

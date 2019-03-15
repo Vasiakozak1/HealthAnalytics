@@ -21,7 +21,7 @@ namespace HealthAnalytics.Web.Middlewares
         {
             try
             {
-                await next(context);
+                await next.Invoke(context);
             }
             catch(Exception e)
             {
